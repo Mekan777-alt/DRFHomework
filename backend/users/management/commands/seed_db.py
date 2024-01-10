@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from django.core.management import BaseCommand
-
-from users.enums import Groups
+from projects.models import CountryProject
+from users.enums import Groups, Country
 
 PROJECT_PERMISSION = Permission.objects.filter(codename__contains='project')
 
@@ -13,6 +13,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.seed_groups()
         self.set_permissions()
+        self.seed_country()
+
+    def seed_country(self):
+        CountryProject.objects.get_or_create(country_name=Country.RUSSIA.name)
+        CountryProject.objects.get_or_create(country_name=Country.USA.name)
+        CountryProject.objects.get_or_create(country_name=Country.SPAIN.name)
+        CountryProject.objects.get_or_create(country_name=Country.TURKEY.name)
+        CountryProject.objects.get_or_create(country_name=Country.GB.name)
+
+        self.stdout.write('Country added to database')
 
     def seed_groups(self):
         Group.objects.get_or_create(name=Groups.BACKER.name)

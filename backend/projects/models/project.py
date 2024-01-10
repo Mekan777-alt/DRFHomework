@@ -14,6 +14,13 @@ class Project(models.Model):
         on_delete=models.CASCADE
     )
 
+    country = models.ForeignKey(
+        'projects.CountryProject',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
     name = models.CharField('Название', max_length=255)
 
     description = models.TextField('Описание')
