@@ -6,6 +6,8 @@ from projects.models import Project, Pledge
 class ProjectsAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(Pledge)
 class PledgeAdmin(admin.ModelAdmin):
     pass
+

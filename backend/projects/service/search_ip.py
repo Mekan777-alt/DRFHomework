@@ -10,7 +10,7 @@ def get_country_user(ip_address):
         "ip": ip_address,
         "output": "json",
         "fields": "countryName",
-        "languages": "ru"
+        "languages": "en"
     })
 
     return info
