@@ -17,6 +17,7 @@ class ProjectCreateUpdateSerializer(ProjectSerializer):
             description=validated_data.get('description'),
             total_amount=validated_data.get('total_amount'),
             deadline=validated_data.get("deadline"),
+            country_id=validated_data.get("country_id"),
             user=self.context['request'].user,
             status=Project.Status.ON_MODERATION.value,
             current_amount=0

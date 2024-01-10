@@ -4,6 +4,16 @@ from rest_framework.pagination import PageNumberPagination
 from projects.api.serializers.project import ProjectCreateUpdateSerializer, ProjectListDetailSerializer
 from projects.models import Project
 from rest_framework.permissions import IsAuthenticated
+from projects.service.search_ip import get_country_user
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 class ProjectListCreateView(ListCreateAPIView):
@@ -11,6 +21,23 @@ class ProjectListCreateView(ListCreateAPIView):
     serializer_class = ProjectCreateUpdateSerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        from_my_country = self.request.GET.get('from_my_country', None)
+        queryset = Project.objects.filter(is_approved=True)
+
+        client_ip = get_client_ip(self.request)
+
+        user_info = get_country_user(client_ip)
+        user_country = user_info.get('countryName') if user_info else None
+
+        if user_country is not None:
+            user_country = user_country.upper()
+
+        if from_my_country == 'true' and user_country:
+            queryset = queryset.filter(country__country_name=user_country)
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

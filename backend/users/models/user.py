@@ -15,3 +15,11 @@ class User(AbstractUser):
     last_name = models.CharField('Фамилия', max_length=255)
 
     username = None
+
+    def get_wallet(self):
+        from users.models import UserWallet
+
+        wallet, _ = UserWallet.objects.get_or_create(user=self)
+
+        return wallet
+
