@@ -3,17 +3,15 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from users.tasks import send_password_reset_email
 
+from backend.users.api.serializers.change_password import ChangePasswordSerializer
+
 
 @api_view(['POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
 def reset_password(request):
     email = request.data.get('email')
 
@@ -27,16 +25,20 @@ def reset_password(request):
 
             send_password_reset_email.delay(email, reset_link)
 
-            return Response({'detail': f'Ссылка для сброса пароля успешно отправлена. {reset_link}'}, status=status.HTTP_200_OK)
+            return Response({'detail': f'Ссылка для сброса пароля успешно отправлена.'}, status=status.HTTP_200_OK)
 
     return Response({'detail': 'Неверный адрес электронной почты.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 def change_password(request):
-    token = request.GET.get("secret", None)
-    password = request.data.get('password')
-    confirm_password = request.data.get('confirm_password')
+    serializer = ChangePasswordSerializer(data=request.data)
+
+    serializer.is_valid(raise_exception=True)
+
+    token = serializer.validated_data['secret']
+    password = serializer.validated_data['password']
+    confirm_password = serializer.validated_data['confirm_password']
 
     if token and password == confirm_password:
         try:

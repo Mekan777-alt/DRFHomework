@@ -7,15 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from projects.service.search_ip import get_country_user
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
 class ProjectListCreateView(ListCreateAPIView):
     queryset = Project.objects.filter(is_approved=True)
     serializer_class = ProjectCreateUpdateSerializer
@@ -26,10 +17,7 @@ class ProjectListCreateView(ListCreateAPIView):
         from_my_country = self.request.GET.get('from_my_country', None)
         queryset = Project.objects.filter(is_approved=True)
 
-        client_ip = get_client_ip(self.request)
-
-        user_info = get_country_user(client_ip)
-        user_country = user_info.get('countryName') if user_info else None
+        user_country = get_country_user(self.request)
 
         if user_country is not None:
             user_country = user_country.upper()
