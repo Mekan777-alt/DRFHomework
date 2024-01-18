@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from projects.api.serializers.reward import RewardSerializer
 from rest_framework.decorators import authentication_classes, permission_classes
 from projects.models import Reward
+from rest_framework.generics import get_object_or_404
 
 
 @authentication_classes([JWTAuthentication])
@@ -25,9 +26,7 @@ class RewardAPIView(APIView):
         reward = Reward.objects.all()
         serializer = RewardSerializer(data=reward, many=True)
 
-        if serializer.is_valid():
-            return Response(serializer.data)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Создайте новую модель",
@@ -39,10 +38,12 @@ class RewardAPIView(APIView):
     )
     def post(self, request):
         serializer = RewardSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.is_valid()
+
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="Удаление модели",
@@ -52,12 +53,9 @@ class RewardAPIView(APIView):
         }
     )
     def delete(self, request, pk):
-        try:
-            reward = Reward.objects.get(pk=pk)
-        except Reward.DoesNotExist:
-            return Response({"message": "Обьект не найден"}, status=status.HTTP_404_NOT_FOUND)
-
+        reward = get_object_or_404(Reward, pk=pk)
         reward.delete()
+
         return Response({"message": "Обьект успешно удален"}, status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
@@ -69,13 +67,9 @@ class RewardAPIView(APIView):
         }
     )
     def put(self, request, pk):
-        try:
-            reward = Reward.objects.get(pk=pk)
-        except Reward.DoesNotExist:
-            return Response({"message": "Обьект не найден"}, status=status.HTTP_404_NOT_FOUND)
-
+        reward = get_object_or_404(Reward, pk=pk)
         serializer = RewardSerializer(reward, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
